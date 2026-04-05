@@ -12,6 +12,7 @@ import javafx.stage.Stage;
 public class BookingsView {
 
     private BookingService bookingService = new BookingService();
+    private GuestService guestService = new GuestService();
     private RoomService roomService = new RoomService();
 
     private TableView<Booking> table = new TableView<>();
@@ -91,7 +92,25 @@ public class BookingsView {
         };
 
         roomBox.setOnAction(e -> calc.run());
-        checkIn.setOnAction(e -> calc.run());
+        checkIn.setOnAction(e -> {
+            checkOut.setValue(null);
+
+            checkOut.setDayCellFactory(dp -> new DateCell() {
+                @Override
+                public void updateItem(java.time.LocalDate item, boolean empty) {
+                    super.updateItem(item, empty);
+
+                    if (checkIn.getValue() != null) {
+                        if (!item.isAfter(checkIn.getValue())) {
+                            setDisable(true);
+                        }
+                    }
+                }
+            });
+
+            calc.run();
+        });
+
         checkOut.setOnAction(e -> calc.run());
 
         TableColumn<Booking, String> guestCol = new TableColumn<>("Guest");
@@ -135,10 +154,12 @@ public class BookingsView {
             } else {
                 refreshTable();
                 refreshForm(guestBox, roomBox);
+
                 guestBox.setValue(null);
                 roomBox.setValue(null);
                 checkIn.setValue(null);
                 checkOut.setValue(null);
+
                 totalLabel.setText("Booking created");
             }
         });

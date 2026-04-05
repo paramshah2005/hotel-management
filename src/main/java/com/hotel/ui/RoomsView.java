@@ -37,7 +37,7 @@ public class RoomsView {
         cbType.setStyle(inputStyle);
 
         Label lbStatus = new Label("Status:");
-        ComboBox<String> cbStatus = new ComboBox<>(FXCollections.observableArrayList("AVAILABLE", "OCCUPIED", "MAINTENANCE"));
+        ComboBox<String> cbStatus = new ComboBox<>(FXCollections.observableArrayList("AVAILABLE", "OCCUPIED"));
         cbStatus.setValue("AVAILABLE");
         cbStatus.setStyle(inputStyle);
 

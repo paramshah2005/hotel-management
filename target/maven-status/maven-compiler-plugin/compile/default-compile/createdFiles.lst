@@ -5,6 +5,7 @@ com\hotel\db\PaymentDAO.class
 com\hotel\db\BookingDAO.class
 com\hotel\service\RoomService.class
 com\hotel\ui\BillingView.class
+com\hotel\ui\BookingsView$1.class
 com\hotel\ui\PaymentsView.class
 com\hotel\db\RoomDAO.class
 com\hotel\ui\SceneManager.class
