@@ -1,16 +1,17 @@
 package com.hotel;
 
 import com.hotel.db.DBConnection;
+import com.hotel.ui.*;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import com.hotel.ui.*;
+import javafx.stage.Stage;
 
 public class MainApp extends Application {
 
@@ -20,53 +21,71 @@ public class MainApp extends Application {
         try {
             DBConnection.getConnection();
         } catch (Exception e) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Database Error");
-            alert.setHeaderText("Failed to connect to database");
-            alert.setContentText("Please check your database configuration.\n\n" + e.getMessage());
-            alert.showAndWait();
-            return; 
+            System.out.println("DB Connection Failed: " + e.getMessage());
         }
 
-        Label title = new Label("Hotel Management System");
-        title.setFont(Font.font("Arial", FontWeight.BOLD, 18));
+        VBox root = new VBox(25);
+        root.setPadding(new Insets(40));
+        root.setAlignment(Pos.CENTER);
+        root.setStyle("-fx-background-color: #0b1220;");
 
-        Label subtitle = new Label("Select a module to continue");
-        subtitle.setFont(Font.font("Arial", 12));
+        Label title = new Label("Hotel Management");
+        title.setFont(Font.font("Arial", FontWeight.BOLD, 26));
+        title.setStyle("-fx-text-fill: #e2e8f0;");
 
-        Button btnRooms    = new Button("Manage Rooms");
-        Button btnGuests   = new Button("Manage Guests");
+        Button btnRooms = new Button("Manage Rooms");
+        Button btnGuests = new Button("Manage Guests");
         Button btnBookings = new Button("Manage Bookings");
-        Button btnBilling  = new Button("Billing");
-        Button btnPayments = new Button("View Payments");
+        Button btnBilling = new Button("Billing");
+        Button btnPayments = new Button("Payments");
 
-        for (Button btn : new Button[]{btnRooms, btnGuests, btnBookings, btnBilling, btnPayments}) {
-            btn.setPrefWidth(200);
+        Button[] buttons = {btnRooms, btnGuests, btnBookings, btnBilling, btnPayments};
+
+        for (Button btn : buttons) {
+            btn.setPrefWidth(260);
+            btn.setPrefHeight(45);
+
+            btn.setStyle(
+                "-fx-background-color: #1f2a44;" +
+                "-fx-text-fill: #e2e8f0;" +
+                "-fx-font-size: 14px;" +
+                "-fx-background-radius: 14;"
+            );
+
+            btn.setOnMouseEntered(e ->
+                btn.setStyle(
+                    "-fx-background-color: #2e3a59;" +
+                    "-fx-text-fill: white;" +
+                    "-fx-font-size: 14px;" +
+                    "-fx-background-radius: 14;"
+                )
+            );
+
+            btn.setOnMouseExited(e ->
+                btn.setStyle(
+                    "-fx-background-color: #1f2a44;" +
+                    "-fx-text-fill: #e2e8f0;" +
+                    "-fx-font-size: 14px;" +
+                    "-fx-background-radius: 14;"
+                )
+            );
         }
 
-        // Navigation
         btnRooms.setOnAction(e -> new RoomsView().show());
         btnGuests.setOnAction(e -> new GuestsView().show());
         btnBookings.setOnAction(e -> new BookingsView().show());
         btnBilling.setOnAction(e -> new BillingView().show());
         btnPayments.setOnAction(e -> new PaymentsView().show());
 
-        VBox layout = new VBox(12,
-                title,
-                subtitle,
-                btnRooms,
-                btnGuests,
-                btnBookings,
-                btnBilling,
-                btnPayments
-        );
-        layout.setStyle("-fx-background-color: #d6eaff;");
+        VBox buttonColumn = new VBox(18, btnRooms, btnGuests, btnBookings, btnBilling, btnPayments);
+        buttonColumn.setAlignment(Pos.CENTER);
 
-        layout.setAlignment(Pos.CENTER);
-        layout.setPadding(new Insets(30));
+        root.getChildren().addAll(title, buttonColumn);
+
+        Scene scene = new Scene(root, 340, 420);
 
         primaryStage.setTitle("Hotel Management System");
-        primaryStage.setScene(new Scene(layout, 320, 340));
+        primaryStage.setScene(scene);
         primaryStage.setResizable(false);
         primaryStage.show();
     }

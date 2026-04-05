@@ -19,45 +19,40 @@ public class PaymentsView {
         stage.setTitle("All Payments");
 
         Label revenueLabel = new Label();
+        revenueLabel.setStyle("-fx-text-fill: #ffffff;");
 
         TableColumn<Payment, Number> idCol = new TableColumn<>("ID");
         idCol.setCellValueFactory(d -> new javafx.beans.property.SimpleIntegerProperty(d.getValue().getId()));
 
         TableColumn<Payment, Number> bookingCol = new TableColumn<>("Booking");
-        bookingCol
-                .setCellValueFactory(d -> new javafx.beans.property.SimpleIntegerProperty(d.getValue().getBookingId()));
+        bookingCol.setCellValueFactory(d -> new javafx.beans.property.SimpleIntegerProperty(d.getValue().getBookingId()));
 
         TableColumn<Payment, Number> amtCol = new TableColumn<>("Amount");
         amtCol.setCellValueFactory(d -> new javafx.beans.property.SimpleDoubleProperty(d.getValue().getAmount()));
 
         TableColumn<Payment, String> methodCol = new TableColumn<>("Method");
-        methodCol.setCellValueFactory(
-                d -> new javafx.beans.property.SimpleStringProperty(d.getValue().getPaymentMethod()));
+        methodCol.setCellValueFactory(d -> new javafx.beans.property.SimpleStringProperty(d.getValue().getPaymentMethod()));
 
-        TableColumn<Payment, String> statusCol = new TableColumn<>("Status");
-        statusCol.setCellValueFactory(d -> new javafx.beans.property.SimpleStringProperty(d.getValue().getStatus()));
+        table.getColumns().addAll(idCol, bookingCol, amtCol, methodCol);
 
-        TableColumn<Payment, String> guestCol = new TableColumn<>("Guest");
-        guestCol.setCellValueFactory(d -> {
-            var booking = bookingService.getAllBookings().stream()
-                    .filter(b -> b.getId() == d.getValue().getBookingId())
-                    .findFirst()
-                    .orElse(null);
-            return new javafx.beans.property.SimpleStringProperty(
-                    booking != null ? booking.getGuestName() : "");
-        });
-
-        table.getColumns().addAll(idCol, guestCol, bookingCol, amtCol, methodCol, statusCol);
+        table.setStyle(
+                "-fx-background-color: #1c2433;" +
+                "-fx-control-inner-background: #1c2433;" +
+                "-fx-table-cell-border-color: transparent;" +
+                "-fx-text-fill: #6b7280;"
+        );
 
         table.setItems(FXCollections.observableArrayList(
-                bookingService.getAllPayments()));
+                bookingService.getAllPayments()
+        ));
 
         revenueLabel.setText("Total Revenue: " + bookingService.getTotalRevenue());
 
         VBox root = new VBox(10, revenueLabel, table);
         root.setPadding(new Insets(10));
+        root.setStyle("-fx-background-color: #121826;");
 
-        stage.setScene(new Scene(root, 700, 400));
+        stage.setScene(new Scene(root, 600, 400));
         stage.show();
     }
 }
