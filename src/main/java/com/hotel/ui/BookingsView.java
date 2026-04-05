@@ -41,7 +41,7 @@ public class BookingsView {
         Button btnCheckOut = new Button("Check-Out");
         Button btnCancel = new Button("Cancel");
 
-        Button[] buttons = {btnCreate, btnCheckIn, btnCheckOut, btnCancel};
+        Button[] buttons = { btnCreate, btnCheckIn, btnCheckOut, btnCancel };
         for (Button btn : buttons) {
             btn.setStyle("-fx-background-color: #2a3447; -fx-text-fill: #ffffff;");
             btn.setOnMouseEntered(e -> btn.setStyle("-fx-background-color: #374151; -fx-text-fill: #d1d5db;"));
@@ -130,12 +130,11 @@ public class BookingsView {
                     Booking b = row.getItem();
                     Tooltip tooltip = new Tooltip(
                             "Guest: " + b.getGuestName() +
-                            "\nRoom: " + b.getRoomNumber() +
-                            "\nCheck-in: " + b.getCheckIn() +
-                            "\nCheck-out: " + b.getCheckOut() +
-                            "\nNights: " + b.getNumberOfNights() +
-                            "\nTotal: ₹" + String.format("%.2f", b.getTotalAmount())
-                    );
+                                    "\nRoom: " + b.getRoomNumber() +
+                                    "\nCheck-in: " + b.getCheckIn() +
+                                    "\nCheck-out: " + b.getCheckOut() +
+                                    "\nNights: " + b.getNumberOfNights() +
+                                    "\nTotal: ₹" + String.format("%.2f", b.getTotalAmount()));
                     Tooltip.install(row, tooltip);
                 }
             });
@@ -144,26 +143,27 @@ public class BookingsView {
 
         table.setStyle(
                 "-fx-background-color: #1c2433;" +
-                "-fx-control-inner-background: #1c2433;" +
-                "-fx-table-cell-border-color: transparent;" +
-                "-fx-text-fill: #6b7280;"
-        );
+                        "-fx-control-inner-background: #1c2433;" +
+                        "-fx-table-cell-border-color: transparent;" +
+                        "-fx-text-fill: #6b7280;");
 
         refreshTable();
         refreshForm(guestBox, roomBox);
 
         btnCreate.setOnAction(e -> {
-            if (guestBox.getValue() == null || roomBox.getValue() == null ||
-                checkIn.getValue() == null || checkOut.getValue() == null) {
-                totalLabel.setText("Fill all fields");
-                return;
-            }
+            long nights = java.time.temporal.ChronoUnit.DAYS.between(checkIn.getValue(), checkOut.getValue());
+
+            double subtotal = bookingService.calculateSubtotal(
+                    roomBox.getValue().getPricePerNight(), nights);
+
+            double total = bookingService.calculateTotal(subtotal);
 
             Booking b = new Booking();
             b.setGuestId(guestBox.getValue().getId());
             b.setRoomId(roomBox.getValue().getId());
             b.setCheckIn(checkIn.getValue());
             b.setCheckOut(checkOut.getValue());
+            b.setTotalAmount(total);
 
             boolean success = bookingService.createBooking(b);
 
@@ -221,17 +221,14 @@ public class BookingsView {
 
     private void refreshTable() {
         table.setItems(FXCollections.observableArrayList(
-                bookingService.getAllBookings()
-        ));
+                bookingService.getAllBookings()));
     }
 
     private void refreshForm(ComboBox<Guest> guestBox, ComboBox<Room> roomBox) {
         guestBox.setItems(FXCollections.observableArrayList(
-                bookingService.getAvailableGuests()
-        ));
+                bookingService.getAvailableGuests()));
 
         roomBox.setItems(FXCollections.observableArrayList(
-                roomService.getAvailableRooms()
-        ));
+                roomService.getAvailableRooms()));
     }
 }
