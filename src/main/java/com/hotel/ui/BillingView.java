@@ -2,7 +2,6 @@ package com.hotel.ui;
 
 import com.hotel.model.*;
 import com.hotel.service.*;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
@@ -28,7 +27,8 @@ public class BillingView {
         ComboBox<Booking> bookingBox = new ComboBox<>();
         bookingBox.setStyle(inputStyle);
 
-        ComboBox<String> methodBox = new ComboBox<>(FXCollections.observableArrayList("CASH", "CARD", "UPI", "BANK_TRANSFER"));
+        ComboBox<String> methodBox = new ComboBox<>(
+                FXCollections.observableArrayList("CASH", "CARD", "UPI", "BANK_TRANSFER"));
         methodBox.setStyle(inputStyle);
 
         Label details = new Label("Loading...");
@@ -52,23 +52,29 @@ public class BillingView {
         TableColumn<Payment, String> guestCol = new TableColumn<>("Guest");
 
         TableColumn<Payment, Number> bookingCol = new TableColumn<>("Booking");
-        bookingCol.setCellValueFactory(d -> new javafx.beans.property.SimpleIntegerProperty(d.getValue().getBookingId()));
+        bookingCol
+                .setCellValueFactory(d -> new javafx.beans.property.SimpleIntegerProperty(d.getValue().getBookingId()));
 
         TableColumn<Payment, Number> amtCol = new TableColumn<>("Amount");
         amtCol.setCellValueFactory(d -> new javafx.beans.property.SimpleDoubleProperty(d.getValue().getAmount()));
 
         TableColumn<Payment, String> methodCol = new TableColumn<>("Method");
-        methodCol.setCellValueFactory(d -> new javafx.beans.property.SimpleStringProperty(d.getValue().getPaymentMethod()));
+        methodCol.setCellValueFactory(
+                d -> new javafx.beans.property.SimpleStringProperty(d.getValue().getPaymentMethod()));
 
         TableColumn<Payment, String> dateCol = new TableColumn<>("Date");
         dateCol.setCellValueFactory(d -> new javafx.beans.property.SimpleStringProperty(
                 d.getValue().getPaymentDate() != null
                         ? d.getValue().getPaymentDate().format(formatter)
-                        : ""
-        ));
+                        : ""));
 
         table.getColumns().setAll(idCol, guestCol, bookingCol, amtCol, methodCol, dateCol);
-
+        table.setPlaceholder(new Label("No payment history available"));
+        table.setStyle(
+                "-fx-background-color: #1c2433;" +
+                        "-fx-control-inner-background: #1c2433;" +
+                        "-fx-table-cell-border-color: transparent;" +
+                        "-fx-text-fill: #d1d5db;");
         VBox root = new VBox(15, bookingBox, detailsBox, methodBox, btnPay, table);
         root.setPadding(new Insets(10));
         root.setStyle("-fx-background-color: #121826;");
@@ -100,8 +106,7 @@ public class BillingView {
                 table.setItems(FXCollections.observableArrayList(payments));
 
                 guestCol.setCellValueFactory(d -> new javafx.beans.property.SimpleStringProperty(
-                        bookingGuestMap.getOrDefault(d.getValue().getBookingId(), "Unknown")
-                ));
+                        bookingGuestMap.getOrDefault(d.getValue().getBookingId(), "Unknown")));
 
                 details.setText("Select a booking");
             }
@@ -118,12 +123,11 @@ public class BillingView {
 
                 details.setText(
                         "Guest: " + b.getGuestName() +
-                        "\nRoom: " + b.getRoomNumber() +
-                        "\nNights: " + b.getNumberOfNights() +
-                        "\nSubtotal: ₹" + String.format("%.2f", subtotal) +
-                        "\nGST (18%): ₹" + String.format("%.2f", tax) +
-                        "\nTotal: ₹" + String.format("%.2f", total)
-                );
+                                "\nRoom: " + b.getRoomNumber() +
+                                "\nNights: " + b.getNumberOfNights() +
+                                "\nSubtotal: ₹" + String.format("%.2f", subtotal) +
+                                "\nGST (18%): ₹" + String.format("%.2f", tax) +
+                                "\nTotal: ₹" + String.format("%.2f", total));
             }
         });
 

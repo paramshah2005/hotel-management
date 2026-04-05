@@ -46,6 +46,7 @@ public class PaymentsView {
                 d -> new javafx.beans.property.SimpleStringProperty(d.getValue().getPaymentMethod()));
 
         table.getColumns().setAll(idCol, guestCol, bookingCol, amtCol, methodCol);
+        table.setPlaceholder(new Label("No payments found"));
         table.setStyle(
                 "-fx-background-color: #1c2433;" +
                         "-fx-control-inner-background: #1c2433;" +

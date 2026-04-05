@@ -21,8 +21,7 @@ public class GuestHistoryView {
         String inputStyle = "-fx-background-color: #656565; -fx-text-fill: #e5e7eb;";
 
         ComboBox<Guest> guestBox = new ComboBox<>(
-                FXCollections.observableArrayList(guestService.getAllGuests())
-        );
+                FXCollections.observableArrayList(guestService.getAllGuests()));
         guestBox.setStyle(inputStyle);
 
         Label totalLabel = new Label("Total Spent: ₹0");
@@ -34,22 +33,26 @@ public class GuestHistoryView {
         roomCol.setCellValueFactory(d -> new javafx.beans.property.SimpleStringProperty(d.getValue().getRoomNumber()));
 
         TableColumn<Booking, String> inCol = new TableColumn<>("Check-in");
-        inCol.setCellValueFactory(d -> new javafx.beans.property.SimpleStringProperty(d.getValue().getCheckIn().toString()));
+        inCol.setCellValueFactory(
+                d -> new javafx.beans.property.SimpleStringProperty(d.getValue().getCheckIn().toString()));
 
         TableColumn<Booking, String> outCol = new TableColumn<>("Check-out");
-        outCol.setCellValueFactory(d -> new javafx.beans.property.SimpleStringProperty(d.getValue().getCheckOut().toString()));
+        outCol.setCellValueFactory(
+                d -> new javafx.beans.property.SimpleStringProperty(d.getValue().getCheckOut().toString()));
 
         TableColumn<Booking, String> amtCol = new TableColumn<>("Amount");
         amtCol.setCellValueFactory(d -> new javafx.beans.property.SimpleStringProperty(
-                "₹" + String.format("%.2f", d.getValue().getTotalAmount())
-        ));
+                "₹" + String.format("%.2f", d.getValue().getTotalAmount())));
 
         table.getColumns().setAll(roomCol, inCol, outCol, amtCol);
+        table.setPlaceholder(new Label("Select a guest to view history"));
 
         table.setStyle(
                 "-fx-background-color: #1c2433;" +
-                "-fx-control-inner-background: #1c2433;" +
-                "-fx-text-fill: #6b7280;"
+                        "-fx-control-inner-background: #1c2433;" +
+                        "-fx-text-fill: #6b7280;" +
+                        "-fx-table-cell-border-color: transparent;"
+
         );
 
         guestBox.setOnAction(e -> {
@@ -57,8 +60,7 @@ public class GuestHistoryView {
             if (g != null) {
 
                 table.setItems(FXCollections.observableArrayList(
-                        bookingService.getBookingsByGuest(g.getId())
-                ));
+                        bookingService.getBookingsByGuest(g.getId())));
 
                 double total = bookingService.getTotalSpentByGuest(g.getId());
                 totalLabel.setText("Total Spent: ₹" + String.format("%.2f", total));

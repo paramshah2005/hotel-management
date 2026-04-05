@@ -90,7 +90,6 @@ public class BookingsView {
             }
         };
 
-        roomBox.setOnAction(e -> calc.run());
         checkIn.setOnAction(e -> {
             checkOut.setValue(null);
 
@@ -98,7 +97,6 @@ public class BookingsView {
                 @Override
                 public void updateItem(java.time.LocalDate item, boolean empty) {
                     super.updateItem(item, empty);
-
                     if (checkIn.getValue() != null) {
                         if (!item.isAfter(checkIn.getValue())) {
                             setDisable(true);
@@ -110,6 +108,7 @@ public class BookingsView {
             calc.run();
         });
 
+        roomBox.setOnAction(e -> calc.run());
         checkOut.setOnAction(e -> calc.run());
 
         TableColumn<Booking, String> guestCol = new TableColumn<>("Guest");
@@ -122,6 +121,26 @@ public class BookingsView {
         statusCol.setCellValueFactory(d -> new javafx.beans.property.SimpleStringProperty(d.getValue().getStatus()));
 
         table.getColumns().setAll(guestCol, roomCol, statusCol);
+        table.setPlaceholder(new Label("No bookings found"));
+
+        table.setRowFactory(tv -> {
+            TableRow<Booking> row = new TableRow<>();
+            row.setOnMouseEntered(e -> {
+                if (!row.isEmpty()) {
+                    Booking b = row.getItem();
+                    Tooltip tooltip = new Tooltip(
+                            "Guest: " + b.getGuestName() +
+                            "\nRoom: " + b.getRoomNumber() +
+                            "\nCheck-in: " + b.getCheckIn() +
+                            "\nCheck-out: " + b.getCheckOut() +
+                            "\nNights: " + b.getNumberOfNights() +
+                            "\nTotal: ₹" + String.format("%.2f", b.getTotalAmount())
+                    );
+                    Tooltip.install(row, tooltip);
+                }
+            });
+            return row;
+        });
 
         table.setStyle(
                 "-fx-background-color: #1c2433;" +

@@ -98,6 +98,7 @@ public class GuestsView {
                 new javafx.beans.property.SimpleStringProperty(data.getValue().getPhone()));
 
         table.getColumns().addAll(nameCol, emailCol, phoneCol);
+        table.setPlaceholder(new Label("No guests found"));
 
         table.setStyle(
                 "-fx-background-color: #1c2433;" +
