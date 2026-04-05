@@ -7,8 +7,6 @@ import com.hotel.model.Booking;
 import com.hotel.model.Guest;
 import com.hotel.model.Payment;
 import com.hotel.model.Room;
-
-import java.time.LocalDate;
 import java.util.List;
 
 public class BookingService {

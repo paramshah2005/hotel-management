@@ -12,7 +12,6 @@ import javafx.stage.Stage;
 public class BookingsView {
 
     private BookingService bookingService = new BookingService();
-    private GuestService guestService = new GuestService();
     private RoomService roomService = new RoomService();
 
     private TableView<Booking> table = new TableView<>();

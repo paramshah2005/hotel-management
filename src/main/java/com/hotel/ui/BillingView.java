@@ -2,7 +2,9 @@ package com.hotel.ui;
 
 import com.hotel.model.*;
 import com.hotel.service.*;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
+import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -10,7 +12,7 @@ import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
 import java.time.format.DateTimeFormatter;
-import java.util.List;
+import java.util.*;
 
 public class BillingView {
 
@@ -29,7 +31,7 @@ public class BillingView {
         ComboBox<String> methodBox = new ComboBox<>(FXCollections.observableArrayList("CASH", "CARD", "UPI", "BANK_TRANSFER"));
         methodBox.setStyle(inputStyle);
 
-        Label details = new Label("Invoice Details");
+        Label details = new Label("Loading...");
         details.setStyle("-fx-text-fill: #ffffff; -fx-font-size: 13px;");
         details.setWrapText(true);
         details.setMaxWidth(Double.MAX_VALUE);
@@ -41,8 +43,6 @@ public class BillingView {
 
         Button btnPay = new Button("Process Payment");
         btnPay.setStyle("-fx-background-color: #2a3447; -fx-text-fill: #ffffff;");
-        btnPay.setOnMouseEntered(e -> btnPay.setStyle("-fx-background-color: #374151; -fx-text-fill: #d1d5db;"));
-        btnPay.setOnMouseExited(e -> btnPay.setStyle("-fx-background-color: #2a3447; -fx-text-fill: #ffffff;"));
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm");
 
@@ -50,15 +50,6 @@ public class BillingView {
         idCol.setCellValueFactory(d -> new javafx.beans.property.SimpleIntegerProperty(d.getValue().getId()));
 
         TableColumn<Payment, String> guestCol = new TableColumn<>("Guest");
-        guestCol.setCellValueFactory(d -> {
-            int bookingId = d.getValue().getBookingId();
-            for (Booking b : bookingService.getAllBookings()) {
-                if (b.getId() == bookingId) {
-                    return new javafx.beans.property.SimpleStringProperty(b.getGuestName());
-                }
-            }
-            return new javafx.beans.property.SimpleStringProperty("Unknown");
-        });
 
         TableColumn<Payment, Number> bookingCol = new TableColumn<>("Booking");
         bookingCol.setCellValueFactory(d -> new javafx.beans.property.SimpleIntegerProperty(d.getValue().getBookingId()));
@@ -78,19 +69,49 @@ public class BillingView {
 
         table.getColumns().setAll(idCol, guestCol, bookingCol, amtCol, methodCol, dateCol);
 
-        table.setStyle(
-                "-fx-background-color: #1c2433;" +
-                "-fx-control-inner-background: #1c2433;" +
-                "-fx-table-cell-border-color: transparent;" +
-                "-fx-text-fill: #6b7280;"
-        );
+        VBox root = new VBox(15, bookingBox, detailsBox, methodBox, btnPay, table);
+        root.setPadding(new Insets(10));
+        root.setStyle("-fx-background-color: #121826;");
 
-        refreshAll(bookingBox);
+        stage.setScene(new Scene(root, 600, 520));
+        stage.show();
+
+        Task<Void> loadTask = new Task<>() {
+            List<Booking> bookings;
+            List<Payment> payments;
+            Map<Integer, String> bookingGuestMap = new HashMap<>();
+
+            @Override
+            protected Void call() {
+                bookings = bookingService.getUnpaidBookings();
+                List<Booking> allBookings = bookingService.getAllBookings();
+                payments = bookingService.getAllPayments();
+
+                for (Booking b : allBookings) {
+                    bookingGuestMap.put(b.getId(), b.getGuestName());
+                }
+
+                return null;
+            }
+
+            @Override
+            protected void succeeded() {
+                bookingBox.setItems(FXCollections.observableArrayList(bookings));
+                table.setItems(FXCollections.observableArrayList(payments));
+
+                guestCol.setCellValueFactory(d -> new javafx.beans.property.SimpleStringProperty(
+                        bookingGuestMap.getOrDefault(d.getValue().getBookingId(), "Unknown")
+                ));
+
+                details.setText("Select a booking");
+            }
+        };
+
+        new Thread(loadTask).start();
 
         bookingBox.setOnAction(e -> {
             Booking b = bookingBox.getValue();
             if (b != null) {
-
                 double total = b.getTotalAmount();
                 double subtotal = total / 1.18;
                 double tax = total - subtotal;
@@ -119,29 +140,11 @@ public class BillingView {
                 boolean success = bookingService.processPayment(p);
 
                 if (success) {
-                    refreshAll(bookingBox);
                     details.setText("Payment successful");
                 } else {
-                    details.setText("Payment already exists or failed");
+                    details.setText("Payment failed");
                 }
             }
         });
-
-        VBox root = new VBox(15, bookingBox, detailsBox, methodBox, btnPay, table);
-        root.setPadding(new Insets(10));
-        root.setStyle("-fx-background-color: #121826;");
-
-        stage.setScene(new Scene(root, 600, 520));
-        stage.show();
-    }
-
-    private void refreshAll(ComboBox<Booking> bookingBox) {
-        List<Booking> bookings = bookingService.getUnpaidBookings();
-
-        bookingBox.setItems(FXCollections.observableArrayList(bookings));
-
-        table.setItems(FXCollections.observableArrayList(
-                bookingService.getAllPayments()
-        ));
     }
 }

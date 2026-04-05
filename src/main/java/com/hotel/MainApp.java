@@ -29,8 +29,9 @@ public class MainApp extends Application {
         Button btnBilling  = new Button("Billing");
         Button btnHistory  = new Button("Guest History");
         Button btnPayments = new Button("Payments");
+        Button btnDashboard = new Button("Dashboard");
 
-        Button[] buttons = {btnRooms, btnGuests, btnBookings, btnBilling, btnHistory, btnPayments};
+        Button[] buttons = {btnDashboard, btnRooms, btnGuests, btnBookings, btnBilling, btnHistory, btnPayments};
 
         for (Button btn : buttons) {
             btn.setPrefWidth(260);
@@ -39,7 +40,7 @@ public class MainApp extends Application {
             btn.setStyle(
                 "-fx-background-color: #24324a;" +
                 "-fx-text-fill: white;" +
-                "-fx-background-radius: 12;" +   // 👈 less pill (was ~25)
+                "-fx-background-radius: 12;" + 
                 "-fx-font-size: 14px;"
             );
 
@@ -68,8 +69,9 @@ public class MainApp extends Application {
         btnBilling.setOnAction(e -> new BillingView().show());
         btnHistory.setOnAction(e -> new GuestHistoryView().show());
         btnPayments.setOnAction(e -> new PaymentsView().show());
+        btnDashboard.setOnAction(e -> new DashboardView().show());
 
-        VBox layout = new VBox(18, title,
+        VBox layout = new VBox(18, title,btnDashboard,
                 btnRooms, btnGuests, btnBookings, btnBilling, btnHistory, btnPayments);
 
         layout.setAlignment(Pos.CENTER);
