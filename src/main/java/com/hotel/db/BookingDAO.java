@@ -21,6 +21,54 @@ public class BookingDAO {
         return b;
     }
 
+    public boolean hasActiveBooking(int guestId) {
+        String sql = """
+                    SELECT COUNT(*) FROM bookings
+                    WHERE guest_id = ?
+                    AND status IN ('CONFIRMED', 'CHECKED_IN')
+                """;
+
+        try (PreparedStatement ps = DBConnection.getConnection().prepareStatement(sql)) {
+            ps.setInt(1, guestId);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (Exception e) {
+            System.out.println("Error checking guest booking: " + e.getMessage());
+        }
+
+        return false;
+    }
+
+    public boolean isRoomBooked(int roomId, java.time.LocalDate checkIn, java.time.LocalDate checkOut) {
+        String sql = """
+                    SELECT COUNT(*) FROM bookings
+                    WHERE room_id = ?
+                    AND status IN ('CONFIRMED', 'CHECKED_IN')
+                    AND (
+                        check_in < ?
+                        AND check_out > ?
+                    )
+                """;
+
+        try (PreparedStatement ps = DBConnection.getConnection().prepareStatement(sql)) {
+            ps.setInt(1, roomId);
+            ps.setDate(2, java.sql.Date.valueOf(checkOut));
+            ps.setDate(3, java.sql.Date.valueOf(checkIn));
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (Exception e) {
+            System.out.println("Error checking booking overlap: " + e.getMessage());
+        }
+
+        return false;
+    }
+
     public List<Booking> getAll() {
         List<Booking> list = new ArrayList<>();
         String sql = """

@@ -11,7 +11,7 @@ public class PaymentDAO {
         List<Payment> list = new ArrayList<>();
         String sql = "SELECT * FROM payments ORDER BY payment_date DESC";
         try (Statement stmt = DBConnection.getConnection().createStatement();
-                ResultSet rs = stmt.executeQuery(sql)) {
+             ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 Payment p = new Payment(
                         rs.getInt("id"),
@@ -30,16 +30,7 @@ public class PaymentDAO {
 
     public List<Payment> getByBookingId(int bookingId) {
         List<Payment> list = new ArrayList<>();
-        String sql = """
-                    SELECT p.*,
-                           g.first_name || ' ' || g.last_name as guest_name,
-                           b.total_amount
-                    FROM payments p
-                    JOIN bookings b ON p.booking_id = b.id
-                    JOIN guests g ON b.guest_id = g.id
-                    WHERE p.booking_id=?
-                """;
-
+        String sql = "SELECT * FROM payments WHERE booking_id=?";
         try (PreparedStatement ps = DBConnection.getConnection().prepareStatement(sql)) {
             ps.setInt(1, bookingId);
             ResultSet rs = ps.executeQuery();

@@ -4,8 +4,11 @@ import com.hotel.db.BookingDAO;
 import com.hotel.db.PaymentDAO;
 import com.hotel.db.RoomDAO;
 import com.hotel.model.Booking;
+import com.hotel.model.Guest;
 import com.hotel.model.Payment;
 import com.hotel.model.Room;
+
+import java.time.LocalDate;
 import java.util.List;
 
 public class BookingService {
@@ -40,21 +43,44 @@ public class BookingService {
         if (!b.getCheckOut().isAfter(b.getCheckIn()))
             return false;
 
+        List<Booking> existing = bookingDAO.getAll();
+
+        for (Booking ex : existing) {
+            if (ex.getRoomId() == b.getRoomId()) {
+                boolean overlap = !(b.getCheckOut().isBefore(ex.getCheckIn()) ||
+                        b.getCheckIn().isAfter(ex.getCheckOut()));
+                if (overlap && !ex.getStatus().equals("CANCELLED"))
+                    return false;
+            }
+
+            if (ex.getGuestId() == b.getGuestId() &&
+                    (ex.getStatus().equals("CONFIRMED") || ex.getStatus().equals("CHECKED_IN"))) {
+                return false;
+            }
+        }
+
         Room room = roomDAO.getById(b.getRoomId());
-        long nights = java.time.temporal.ChronoUnit.DAYS.between(b.getCheckIn(), b.getCheckOut());
-        double subtotal = calculateSubtotal(room.getPricePerNight(), nights);
-        double total = calculateTotal(subtotal);
+        if (room == null)
+            return false;
+
+        long nights = b.getNumberOfNights();
+        double subtotal = room.getPricePerNight() * nights;
+        double total = subtotal + (subtotal * TAX_RATE);
 
         b.setTotalAmount(total);
         b.setStatus("CONFIRMED");
 
         int id = bookingDAO.add(b);
-        return id != -1;
+        if (id != -1) {
+            roomDAO.updateStatus(b.getRoomId(), "OCCUPIED");
+            return true;
+        }
+
+        return false;
     }
 
-    public void checkIn(int bookingId, int roomId) {
+    public void checkIn(int bookingId) {
         bookingDAO.updateStatus(bookingId, "CHECKED_IN");
-        roomDAO.updateStatus(roomId, "OCCUPIED");
     }
 
     public void checkOut(int bookingId, int roomId) {
@@ -70,6 +96,11 @@ public class BookingService {
     public boolean processPayment(Payment p) {
         if (p.getAmount() <= 0)
             return false;
+
+        List<Payment> existing = paymentDAO.getByBookingId(p.getBookingId());
+        if (!existing.isEmpty())
+            return false;
+
         int id = paymentDAO.add(p);
         return id != -1;
     }
@@ -96,5 +127,44 @@ public class BookingService {
 
     public double getTotalRevenue() {
         return paymentDAO.getAll().stream().mapToDouble(Payment::getAmount).sum();
+    }
+
+    public List<Booking> getUnpaidBookings() {
+        List<Booking> all = bookingDAO.getAll();
+        List<Booking> unpaid = new java.util.ArrayList<>();
+
+        for (Booking b : all) {
+            List<Payment> payments = paymentDAO.getByBookingId(b.getId());
+
+            if (payments.isEmpty()) {
+                unpaid.add(b);
+            }
+        }
+
+        return unpaid;
+    }
+
+    public List<Guest> getAvailableGuests() {
+        List<Guest> allGuests = new GuestService().getAllGuests();
+        List<Booking> active = bookingDAO.getActive();
+
+        List<Guest> available = new java.util.ArrayList<>();
+
+        for (Guest g : allGuests) {
+            boolean isBooked = false;
+
+            for (Booking b : active) {
+                if (b.getGuestId() == g.getId()) {
+                    isBooked = true;
+                    break;
+                }
+            }
+
+            if (!isBooked) {
+                available.add(g);
+            }
+        }
+
+        return available;
     }
 }

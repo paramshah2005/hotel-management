@@ -12,7 +12,6 @@ import javafx.stage.Stage;
 public class BookingsView {
 
     private BookingService bookingService = new BookingService();
-    private GuestService guestService = new GuestService();
     private RoomService roomService = new RoomService();
 
     private TableView<Booking> table = new TableView<>();
@@ -25,11 +24,9 @@ public class BookingsView {
         String inputStyle = "-fx-background-color: #656565; -fx-text-fill: #e5e7eb;";
 
         ComboBox<Guest> guestBox = new ComboBox<>();
-        guestBox.setItems(FXCollections.observableArrayList(guestService.getAllGuests()));
         guestBox.setStyle(inputStyle);
 
         ComboBox<Room> roomBox = new ComboBox<>();
-        roomBox.setItems(FXCollections.observableArrayList(roomService.getAvailableRooms()));
         roomBox.setStyle(inputStyle);
 
         DatePicker checkIn = new DatePicker();
@@ -77,6 +74,26 @@ public class BookingsView {
         form.add(checkOut, 1, 3);
         form.add(totalLabel, 1, 4);
 
+        Runnable calc = () -> {
+            if (roomBox.getValue() != null && checkIn.getValue() != null && checkOut.getValue() != null) {
+                long nights = java.time.temporal.ChronoUnit.DAYS.between(checkIn.getValue(), checkOut.getValue());
+                if (nights <= 0) {
+                    totalLabel.setText("Total: 0");
+                    return;
+                }
+
+                double subtotal = bookingService.calculateSubtotal(
+                        roomBox.getValue().getPricePerNight(), nights);
+                double total = bookingService.calculateTotal(subtotal);
+
+                totalLabel.setText("Total: ₹" + String.format("%.2f", total));
+            }
+        };
+
+        roomBox.setOnAction(e -> calc.run());
+        checkIn.setOnAction(e -> calc.run());
+        checkOut.setOnAction(e -> calc.run());
+
         TableColumn<Booking, String> guestCol = new TableColumn<>("Guest");
         guestCol.setCellValueFactory(d -> new javafx.beans.property.SimpleStringProperty(d.getValue().getGuestName()));
 
@@ -86,7 +103,7 @@ public class BookingsView {
         TableColumn<Booking, String> statusCol = new TableColumn<>("Status");
         statusCol.setCellValueFactory(d -> new javafx.beans.property.SimpleStringProperty(d.getValue().getStatus()));
 
-        table.getColumns().addAll(guestCol, roomCol, statusCol);
+        table.getColumns().setAll(guestCol, roomCol, statusCol);
 
         table.setStyle(
                 "-fx-background-color: #1c2433;" +
@@ -96,6 +113,62 @@ public class BookingsView {
         );
 
         refreshTable();
+        refreshForm(guestBox, roomBox);
+
+        btnCreate.setOnAction(e -> {
+            if (guestBox.getValue() == null || roomBox.getValue() == null ||
+                checkIn.getValue() == null || checkOut.getValue() == null) {
+                totalLabel.setText("Fill all fields");
+                return;
+            }
+
+            Booking b = new Booking();
+            b.setGuestId(guestBox.getValue().getId());
+            b.setRoomId(roomBox.getValue().getId());
+            b.setCheckIn(checkIn.getValue());
+            b.setCheckOut(checkOut.getValue());
+
+            boolean success = bookingService.createBooking(b);
+
+            if (!success) {
+                totalLabel.setText("Booking failed");
+            } else {
+                refreshTable();
+                refreshForm(guestBox, roomBox);
+                guestBox.setValue(null);
+                roomBox.setValue(null);
+                checkIn.setValue(null);
+                checkOut.setValue(null);
+                totalLabel.setText("Booking created");
+            }
+        });
+
+        btnCheckIn.setOnAction(e -> {
+            Booking b = table.getSelectionModel().getSelectedItem();
+            if (b != null) {
+                bookingService.checkIn(b.getId());
+                refreshTable();
+                refreshForm(guestBox, roomBox);
+            }
+        });
+
+        btnCheckOut.setOnAction(e -> {
+            Booking b = table.getSelectionModel().getSelectedItem();
+            if (b != null) {
+                bookingService.checkOut(b.getId(), b.getRoomId());
+                refreshTable();
+                refreshForm(guestBox, roomBox);
+            }
+        });
+
+        btnCancel.setOnAction(e -> {
+            Booking b = table.getSelectionModel().getSelectedItem();
+            if (b != null) {
+                bookingService.cancelBooking(b.getId(), b.getRoomId());
+                refreshTable();
+                refreshForm(guestBox, roomBox);
+            }
+        });
 
         HBox actions = new HBox(10, btnCheckIn, btnCheckOut, btnCancel);
 
@@ -110,6 +183,16 @@ public class BookingsView {
     private void refreshTable() {
         table.setItems(FXCollections.observableArrayList(
                 bookingService.getAllBookings()
+        ));
+    }
+
+    private void refreshForm(ComboBox<Guest> guestBox, ComboBox<Room> roomBox) {
+        guestBox.setItems(FXCollections.observableArrayList(
+                bookingService.getAvailableGuests()
+        ));
+
+        roomBox.setItems(FXCollections.observableArrayList(
+                roomService.getAvailableRooms()
         ));
     }
 }
