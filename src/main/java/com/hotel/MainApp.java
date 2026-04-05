@@ -38,8 +38,9 @@ public class MainApp extends Application {
         Button btnBookings = new Button("Manage Bookings");
         Button btnBilling = new Button("Billing");
         Button btnPayments = new Button("Payments");
+        Button btnHistory = new Button("Guest History");
 
-        Button[] buttons = {btnRooms, btnGuests, btnBookings, btnBilling, btnPayments};
+        Button[] buttons = {btnRooms, btnGuests, btnBookings, btnBilling, btnPayments, btnHistory};
 
         for (Button btn : buttons) {
             btn.setPrefWidth(260);
@@ -76,8 +77,9 @@ public class MainApp extends Application {
         btnBookings.setOnAction(e -> new BookingsView().show());
         btnBilling.setOnAction(e -> new BillingView().show());
         btnPayments.setOnAction(e -> new PaymentsView().show());
+        btnHistory.setOnAction(e -> new GuestHistoryView().show());
 
-        VBox buttonColumn = new VBox(18, btnRooms, btnGuests, btnBookings, btnBilling, btnPayments);
+        VBox buttonColumn = new VBox(18, btnRooms, btnGuests, btnBookings, btnBilling, btnPayments, btnHistory);
         buttonColumn.setAlignment(Pos.CENTER);
 
         root.getChildren().addAll(title, buttonColumn);

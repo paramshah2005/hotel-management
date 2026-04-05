@@ -129,6 +129,30 @@ public class BookingService {
         return paymentDAO.getAll().stream().mapToDouble(Payment::getAmount).sum();
     }
 
+    public List<Booking> getBookingsByGuest(int guestId) {
+        List<Booking> all = bookingDAO.getAll();
+        List<Booking> result = new java.util.ArrayList<>();
+
+        for (Booking b : all) {
+            if (b.getGuestId() == guestId) {
+                result.add(b);
+            }
+        }
+
+        return result;
+    }
+
+    public double getTotalSpentByGuest(int guestId) {
+        List<Booking> list = getBookingsByGuest(guestId);
+
+        double total = 0;
+        for (Booking b : list) {
+            total += b.getTotalAmount();
+        }
+
+        return total;
+    }
+
     public List<Booking> getUnpaidBookings() {
         List<Booking> all = bookingDAO.getAll();
         List<Booking> unpaid = new java.util.ArrayList<>();
