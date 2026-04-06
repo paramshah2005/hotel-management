@@ -7,6 +7,7 @@ com\hotel\ui\BillingView.class
 com\hotel\ui\BookingsView$1.class
 com\hotel\db\RoomDAO.class
 com\hotel\ui\BookingsView.class
+com\hotel\ui\PaymentsView$1.class
 com\hotel\service\GuestService.class
 com\hotel\model\Payment.class
 com\hotel\model\Booking.class
@@ -22,4 +23,5 @@ com\hotel\ui\SceneManager.class
 com\hotel\ui\GuestHistoryView.class
 com\hotel\service\BookingService.class
 com\hotel\db\GuestDAO.class
+com\hotel\ui\BillingView$2.class
 com\hotel\ui\GuestsView.class

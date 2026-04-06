@@ -27,21 +27,18 @@
 
   <dependencies>
 
-    <!-- JavaFX -->
     <dependency>
       <groupId>org.openjfx</groupId>
       <artifactId>javafx-controls</artifactId>
       <version>${javafx.version}</version>
     </dependency>
 
-    <!-- PostgreSQL JDBC -->
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
       <version>42.7.3</version>
     </dependency>
 
-    <!-- JUnit -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
@@ -58,7 +55,6 @@
   <build>
     <plugins>
 
-      <!-- JavaFX Maven Plugin -->
       <plugin>
         <groupId>org.openjfx</groupId>
         <artifactId>javafx-maven-plugin</artifactId>
@@ -68,12 +64,14 @@
         </configuration>
       </plugin>
 
-      <!-- Compiler Plugin -->
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.13.0</version>
         <configuration>
           <release>21</release>
+          <compilerArgs>
+            <arg>-Xlint:-unchecked</arg>
+          </compilerArgs>
         </configuration>
       </plugin>
 
