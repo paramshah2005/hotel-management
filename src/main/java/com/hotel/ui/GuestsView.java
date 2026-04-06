@@ -97,7 +97,15 @@ public class GuestsView {
         phoneCol.setCellValueFactory(data ->
                 new javafx.beans.property.SimpleStringProperty(data.getValue().getPhone()));
 
-        table.getColumns().addAll(nameCol, emailCol, phoneCol);
+        TableColumn<Guest, String> addressCol = new TableColumn<>("Address");
+        addressCol.setCellValueFactory(data ->
+                new javafx.beans.property.SimpleStringProperty(data.getValue().getAddress()));
+        
+        TableColumn<Guest, String> idCol = new TableColumn<>("ID Proof");
+        idCol.setCellValueFactory(data ->
+                new javafx.beans.property.SimpleStringProperty(data.getValue().getIdProof()));
+
+        table.getColumns().addAll(nameCol, emailCol, phoneCol, addressCol, idCol);
         table.setPlaceholder(new Label("No guests found"));
 
         table.setStyle(

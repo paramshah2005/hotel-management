@@ -19,7 +19,6 @@ com\hotel\model\Guest.class
 com\hotel\ui\DashboardView.class
 com\hotel\db\PaymentDAO.class
 com\hotel\ui\PaymentsView.class
-com\hotel\ui\SceneManager.class
 com\hotel\ui\GuestHistoryView.class
 com\hotel\service\BookingService.class
 com\hotel\db\GuestDAO.class
