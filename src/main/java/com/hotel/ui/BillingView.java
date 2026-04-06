@@ -9,6 +9,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
+import java.io.*;
 
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -17,6 +18,61 @@ public class BillingView {
 
     private BookingService bookingService = new BookingService();
     private TableView<Payment> table = new TableView<>();
+
+    private void generateInvoice(Booking b) {
+        try {
+            File dir = new File("invoices");
+            if (!dir.exists())
+                dir.mkdir();
+
+            String fileName = "invoices/invoice_" + b.getId() + ".txt";
+
+            FileWriter writer = new FileWriter(fileName);
+
+            double total = b.getTotalAmount();
+            double subtotal = total / 1.18;
+            double tax = total - subtotal;
+
+            String line = "==================================================\n";
+
+            writer.write(line);
+            writer.write(String.format("%30s\n", "HOTEL INVOICE"));
+            writer.write(line);
+
+            writer.write(String.format("Invoice No : %d\n", b.getId()));
+            writer.write(String.format("Date       : %s\n\n", java.time.LocalDate.now()));
+
+            writer.write("CUSTOMER DETAILS\n");
+            writer.write("----------------------------------------------\n");
+            writer.write(String.format("Guest Name : %s\n", b.getGuestName()));
+            writer.write(String.format("Room No    : %s\n\n", b.getRoomNumber()));
+
+            writer.write("BOOKING DETAILS\n");
+            writer.write("----------------------------------------------\n");
+            writer.write(String.format("Check-in   : %s\n", b.getCheckIn()));
+            writer.write(String.format("Check-out  : %s\n", b.getCheckOut()));
+            writer.write(String.format("Nights     : %d\n\n", b.getNumberOfNights()));
+
+            writer.write("BILL SUMMARY\n");
+            writer.write("----------------------------------------------\n");
+
+            writer.write(String.format("%-25s %15s\n", "Subtotal:", "₹" + String.format("%.2f", subtotal)));
+            writer.write(String.format("%-25s %15s\n", "GST (18%):", "₹" + String.format("%.2f", tax)));
+            writer.write(String.format("%-25s %15s\n", "Total:", "₹" + String.format("%.2f", total)));
+
+            writer.write(line);
+
+            writer.write(String.format("%30s\n", "Thank you for your stay!"));
+            writer.write(String.format("%28s\n", "Visit Again"));
+
+            writer.write(line);
+
+            writer.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     public void show() {
         Stage stage = new Stage();
@@ -43,6 +99,8 @@ public class BillingView {
 
         Button btnPay = new Button("Process Payment");
         btnPay.setStyle("-fx-background-color: #2a3447; -fx-text-fill: #ffffff;");
+        Button btnInvoice = new Button("Generate Invoice");
+        btnInvoice.setStyle("-fx-background-color: #2a3447; -fx-text-fill: #ffffff;");
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm");
 
@@ -75,7 +133,7 @@ public class BillingView {
                         "-fx-control-inner-background: #1c2433;" +
                         "-fx-table-cell-border-color: transparent;" +
                         "-fx-text-fill: #d1d5db;");
-        VBox root = new VBox(15, bookingBox, detailsBox, methodBox, btnPay, table);
+        VBox root = new VBox(15, bookingBox, detailsBox, methodBox, btnPay, btnInvoice, table);
         root.setPadding(new Insets(10));
         root.setStyle("-fx-background-color: #121826;");
 
@@ -145,9 +203,39 @@ public class BillingView {
 
                 if (success) {
                     details.setText("Payment successful");
+
+                    // Refresh table
+                    List<Payment> updatedPayments = bookingService.getAllPayments();
+                    table.setItems(FXCollections.observableArrayList(updatedPayments));
+
+                    // Refresh bookingBox (VERY IMPORTANT)
+                    List<Booking> updatedBookings = bookingService.getUnpaidBookings();
+                    bookingBox.setItems(FXCollections.observableArrayList(updatedBookings));
+
+                    // Optional: clear selection
+                    bookingBox.setValue(null);
                 } else {
                     details.setText("Payment failed");
                 }
+            }
+        });
+        btnInvoice.setOnAction(e -> {
+            Payment selected = table.getSelectionModel().getSelectedItem();
+
+            if (selected == null) {
+                details.setText("Select a payment first");
+                return;
+            }
+
+            Booking b = bookingService.getAllBookings()
+                    .stream()
+                    .filter(x -> x.getId() == selected.getBookingId())
+                    .findFirst()
+                    .orElse(null);
+
+            if (b != null) {
+                generateInvoice(b);
+                details.setText("Invoice saved in /invoices folder");
             }
         });
     }
